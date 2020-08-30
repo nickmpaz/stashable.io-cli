@@ -22,7 +22,7 @@ jobs:
       run: |
         pyinstaller --onefile --name=stashable cli.py
     - name: Create artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: stashable
-          path: dist/stashable
+      uses: actions/upload-artifact@v2
+      with:
+        name: stashable
+        path: dist/stashable
