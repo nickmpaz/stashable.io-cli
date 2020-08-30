@@ -69,6 +69,9 @@ def create_snippet(stage):
             tags = []
         snippet = ''.join([line.decode() for line in lines[11:]])
 
+        if title == '' or snippet == '':
+            return
+
     data = {
         'apiToken': api_token,
         'type': 'snippet',
