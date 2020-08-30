@@ -65,6 +65,8 @@ def create_snippet(stage):
         lines = f.readlines()
         title = lines[3].decode().strip()
         tags = [word.strip() for word in lines[7].decode().split(',')]
+        if tags[0] == '':
+            tags = []
         snippet = ''.join([line.decode() for line in lines[11:]])
 
     data = {
