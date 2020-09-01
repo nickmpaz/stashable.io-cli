@@ -69,7 +69,8 @@ def create_snippet(stage):
             tags = []
         snippet = ''.join([line.decode() for line in lines[11:]])
 
-        if title == '' or snippet == '':
+        if title == '' and snippet == '' and tags == []:
+            print('No changes made, aborting.')
             return
 
     data = {
@@ -81,6 +82,7 @@ def create_snippet(stage):
     }
     r = requests.post(f'https://api.stashable.io/{stage}/external/create_resource', json=data)
     r.raise_for_status()
+    print(f"Created snippet: {title}")
 
 if __name__ == "__main__":
     category_choices = ['configure', 'snippet']
