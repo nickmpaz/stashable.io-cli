@@ -6,43 +6,60 @@ import subprocess
 import os
 import time
 import requests
+import json
 
-def get_api_token():
-    app_dir = Path.home() / '.stashable'
+from simple_term_menu import TerminalMenu
+app_dir = Path.home() / '.stashable'
+config_file = app_dir / 'config'
+editors = [
+    {
+        'name': 'Vim',
+        'command': ['vim', '-f']
+    }, {
+        'name': 'VS Code',
+        'command': ['code', '-w']
+    }
+]
+
+
+def set_config(config):
     app_dir.mkdir(parents=True, exist_ok=True)
-    credentials_file = app_dir / 'credentials'
+    with open(config_file, "w") as f:
+        f.write(json.dumps(config))
+
+
+def get_config():
+    app_dir.mkdir(parents=True, exist_ok=True)
     try:
-        with open(credentials_file, "r") as f:
-            api_token = f.readline()
-            return api_token
+        with open(config_file, "r") as f:
+            config = json.loads(f.readline())
+            return config
     except:
         return None
 
 
-def set_api_token(api_token):
-    app_dir = Path.home() / '.stashable'
-    app_dir.mkdir(parents=True, exist_ok=True)
-    credentials_file = app_dir / 'credentials'
-    with open(credentials_file, "w") as f:
-        f.write(api_token)
-
-
 def configure():
-    api_token = get_api_token()
-    if api_token is not None:
-        confirm = input(
-            "A token already exists. Would you like to overwrite? [y/N]: ")
-        if confirm.lower() != "y":
-            return
-    api_token = input("Enter your Stashable.io API Token: ")
-    set_api_token(api_token)
+    config = get_config()
+    if config is not None and config.get('api_token'):
+        api_token = input(f"Enter your Stashable.io API Token [{config.get('api_token')}]: ")
+        if api_token == "":
+            api_token = config.get('api_token')
+    else:
+        api_token = input("Enter your Stashable.io API Token: ")
+    print('Choose your editor:')
+    select_editor_menu = TerminalMenu([editor['name'] for editor in editors])
+    editor = select_editor_menu.show()
+
+    set_config({'api_token': api_token, 'editor': editor})
 
 
 def create_snippet(stage):
-    api_token = get_api_token()
-    if api_token is None:
+    config = get_config()
+    if config is None:
         configure()
-        api_token = get_api_token()
+        config = get_config()
+    api_token = config['api_token']
+
     snippet_template = b"""#####################
 # Enter title below #
 #####################
@@ -58,8 +75,7 @@ def create_snippet(stage):
     with tempfile.NamedTemporaryFile() as f:
         f.write(snippet_template)
         f.seek(0)
-        editor = os.environ.get('EDITOR', 'vi')
-        process = subprocess.Popen([editor, '-w', f.name])
+        process = subprocess.Popen(editors[config['editor']]['command'] + [f.name])
         process.wait()
         f.seek(0)
         lines = f.readlines()
@@ -80,9 +96,11 @@ def create_snippet(stage):
         'tags': tags,
         'content': snippet,
     }
-    r = requests.post(f'https://api.stashable.io/{stage}/external/create_resource', json=data)
+    r = requests.post(
+        f'https://api.stashable.io/{stage}/external/create_resource', json=data)
     r.raise_for_status()
     print(f"Created snippet: {title}")
+
 
 if __name__ == "__main__":
     category_choices = ['configure', 'snippet']
