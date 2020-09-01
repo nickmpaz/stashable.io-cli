@@ -1,2 +1,3 @@
 pyinstaller
 requests
+simple-term-menu
