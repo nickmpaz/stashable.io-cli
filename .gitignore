@@ -1,6 +1,7 @@
 *.spec
 .vscode/**
-build/**
-dist/**
-__pycache__/**
-venv/**
+src/build/**
+src/dist/**
+src/__pycache__/**
+src/venv/**
+terraform/.terraform/**
