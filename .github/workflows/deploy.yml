@@ -26,3 +26,11 @@ jobs:
       with:
         name: stashable
         path: dist/stashable
+    - name: Sync to bucket
+      shell: bash
+      env:
+        CICD: "*"
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      run: |
+        aws s3 sync --delete ./dist s3://cli.stashable.io/linux
